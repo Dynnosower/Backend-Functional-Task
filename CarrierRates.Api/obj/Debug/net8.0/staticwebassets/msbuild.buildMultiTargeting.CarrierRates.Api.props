@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\CarrierRates.Api.props" />
+</Project>
