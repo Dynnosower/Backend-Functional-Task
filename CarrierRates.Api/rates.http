@@ -1,4 +1,0 @@
-GET http://localhost:5173/
-
-###
-POST http://localhost:5173/api/dhl/rates
