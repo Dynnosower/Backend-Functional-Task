@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace CarrierRates.Api.Dtos;
+namespace CarrierRates.Api.Dtos.Dhl;
 
 public record class DhlPostRatesRequestDto
 {

@@ -9,6 +9,6 @@ public record class ShippingRateResponseDto
 public record class RateOption
 {
     public required string ServiceName { get; init; }
-    public DateOnly EstimatedDelivery { get; init; }
+    public string EstimatedDelivery { get; init; } = "N/A";
     public required decimal Price { get; init; }
 }

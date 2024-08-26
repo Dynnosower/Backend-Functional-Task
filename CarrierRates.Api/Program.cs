@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using CarrierRates.Api.Extensions;
 using CarrierRates.Api.HttpClients;
 using Microsoft.OpenApi.Models;
@@ -15,7 +16,8 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Backend Developer Functional Task", Version = "v1" });
 });
 
-builder.Services.AddLogging(config => {
+builder.Services.AddLogging(config =>
+{
     config.AddDebug();
 });
 

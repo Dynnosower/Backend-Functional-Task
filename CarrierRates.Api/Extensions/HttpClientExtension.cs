@@ -6,15 +6,6 @@ namespace CarrierRates.Api.Extensions;
 
 public static class HttpClientExtension
 {
-    public static IHttpClientBuilder AddJsonAcceptHeader(this IHttpClientBuilder builder)
-    {
-        return builder.ConfigureHttpClient(client =>
-        {
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        });
-    }
-
     public static IServiceCollection AddCustomHttpClients(this IServiceCollection services)
     {
         services.AddHttpClient<DhlHttpClient>(client =>
@@ -24,12 +15,12 @@ public static class HttpClientExtension
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });
 
-        // services.AddHttpClient<DhlHttpClient>()
-        // .AddJsonAcceptHeader()
-        // .ConfigureHttpClient(client =>
-        // {
-        //     client.BaseAddress = new Uri("https://api-mock.dhl.com");
-        // });
+        services.AddHttpClient<LalamoveHttpClient>(client =>
+        {
+            client.BaseAddress = new Uri("https://rest.sandbox.lalamove.com");
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        });
 
         return services;
     }

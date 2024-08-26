@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace CarrierRates.Api.Dtos;
+namespace CarrierRates.Api.Dtos.Dhl;
 
 public record class DhlPostRatesResponseDto
 {

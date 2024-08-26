@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using CarrierRates.Api.Dtos;
+using CarrierRates.Api.Dtos.Dhl;
 using CarrierRates.Api.HttpClients;
 using CarrierRates.Api.Mapping;
 using Microsoft.AspNetCore.Mvc;
@@ -19,29 +19,28 @@ namespace CarrierRates.Api.Controllers
 
         [Consumes("application/json")]
         [HttpPost("rates")]
-        public async Task<IActionResult> PostRates(DhlPostRatesRequestDto dto)
+        public async Task<IActionResult> PostRates(DhlPostRatesRequestDto request)
         {
             var queryParams = new Dictionary<string, string>{
-                {"accountNumber", dto.AccountNumber.ToString()},
-                {"originCountryCode ", dto.OriginCountryCode.ToString()},
-                {"originPostalCode ", dto.OriginPostalCode.ToString()},
-                {"originCityName ", dto.OriginCityName.ToString()},
-                {"destinationCountryCode ", dto.DestinationCountryCode.ToString()},
-                {"destinationPostalCode ", dto.DestinationCityName.ToString()},
-                {"destinationCityName ", dto.DestinationCityName.ToString()},
-                {"weight ", dto.Weight.ToString()},
-                {"length ", dto.Length.ToString()},
-                {"width ", dto.Width.ToString()},
-                {"height ", dto.Height.ToString()},
-                {"plannedShippingDate ", dto.PlannedShippingDate.ToString()},
-                {"isCustomsDeclarable  ", dto.IsCustomsDeclarable.ToString()},
-                {"unitOfMeasurement", dto.UnitOfMeasurement.ToString()},
+                {"accountNumber", request.AccountNumber.ToString()},
+                {"originCountryCode ", request.OriginCountryCode.ToString()},
+                {"originPostalCode ", request.OriginPostalCode.ToString()},
+                {"originCityName ", request.OriginCityName.ToString()},
+                {"destinationCountryCode ", request.DestinationCountryCode.ToString()},
+                {"destinationPostalCode ", request.DestinationCityName.ToString()},
+                {"destinationCityName ", request.DestinationCityName.ToString()},
+                {"weight ", request.Weight.ToString()},
+                {"length ", request.Length.ToString()},
+                {"width ", request.Width.ToString()},
+                {"height ", request.Height.ToString()},
+                {"plannedShippingDate ", request.PlannedShippingDate.ToString()},
+                {"isCustomsDeclarable  ", request.IsCustomsDeclarable.ToString()},
+                {"unitOfMeasurement", request.UnitOfMeasurement.ToString()},
             };
 
-            Console.WriteLine(queryParams.ToString());
             Debug.WriteLine(queryParams.ToString());
 
-            var response = await _httpClient.PostRates(queryParams);
+            var response = await _httpClient.PostRatesAsync(queryParams);
 
             return Ok(response.ToShippingRateResponseDto());
         }

@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using CarrierRates.Api.Dtos;
+using CarrierRates.Api.Dtos.Dhl;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace CarrierRates.Api.HttpClients;
@@ -16,7 +16,7 @@ public class DhlHttpClient
         _httpClient = httpClient;
     }
 
-    public async Task<DhlPostRatesResponseDto> PostRates(Dictionary<string, string> queryParams)
+    public async Task<DhlPostRatesResponseDto> PostRatesAsync(Dictionary<string, string> queryParams)
     {
         string endpoint = "/mydhlapi/rates";
         var requestUri = QueryHelpers.AddQueryString(endpoint, queryParams!);
@@ -29,9 +29,9 @@ public class DhlHttpClient
         using (var response = await _httpClient.SendAsync(request))
         {
             response.EnsureSuccessStatusCode();
-            var jsonString = await response.Content.ReadAsStringAsync();
-            Debug.WriteLine(jsonString);
-            return JsonSerializer.Deserialize<DhlPostRatesResponseDto>(jsonString)!;
+            var responseJsonString = await response.Content.ReadAsStringAsync();
+            // Debug.WriteLine(responseJsonString);
+            return JsonSerializer.Deserialize<DhlPostRatesResponseDto>(responseJsonString)!;
         }
     }
 }
