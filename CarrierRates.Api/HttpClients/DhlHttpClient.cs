@@ -3,11 +3,14 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using CarrierRates.Api.Dtos.Dhl;
+using CarrierRates.Api.Mapping;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace CarrierRates.Api.HttpClients;
 
-public class DhlHttpClient
+public class DhlHttpClient : ICarrierRatesHttpClient
 {
     private readonly HttpClient _httpClient;
 
@@ -16,22 +19,39 @@ public class DhlHttpClient
         _httpClient = httpClient;
     }
 
-    public async Task<DhlPostRatesResponseDto> PostRatesAsync(Dictionary<string, string> queryParams)
+    public async Task<string> PostRatesAsync(object request)
     {
+        var requestDto = (DhlPostRatesRequestDto)request;
+
+        var queryParams = new Dictionary<string, string>{
+                {"accountNumber", requestDto.AccountNumber.ToString()},
+                {"originCountryCode ", requestDto.OriginCountryCode.ToString()},
+                {"originPostalCode ", requestDto.OriginPostalCode.ToString()},
+                {"originCityName ", requestDto.OriginCityName.ToString()},
+                {"destinationCountryCode ", requestDto.DestinationCountryCode.ToString()},
+                {"destinationPostalCode ", requestDto.DestinationCityName.ToString()},
+                {"destinationCityName ", requestDto.DestinationCityName.ToString()},
+                {"weight", requestDto.Weight.ToString()},
+                {"length", requestDto.Length.ToString()},
+                {"width", requestDto.Width.ToString()},
+                {"height", requestDto.Height.ToString()},
+                {"plannedShippingDate", requestDto.PlannedShippingDate.ToString()},
+                {"isCustomsDeclarable", requestDto.IsCustomsDeclarable.ToString()},
+                {"unitOfMeasurement", requestDto.UnitOfMeasurement.ToString()},
+            };
+
         string endpoint = "/mydhlapi/rates";
         var requestUri = QueryHelpers.AddQueryString(endpoint, queryParams!);
-        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, requestUri);
 
-        request.Headers.Add("Message-Reference", "d0e7832e-5c98-11ea-bc55-0242ac13");
-        request.Headers.Add("Message-Reference-Date", "Wed, 21 Oct 2015 07:28:00 GMT");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", "ZGVtby1rZXk6ZGVtby1zZWNyZXQ=");
+        httpRequest.Headers.Add("Message-Reference", "d0e7832e-5c98-11ea-bc55-0242ac13");
+        httpRequest.Headers.Add("Message-Reference-Date", "Wed, 21 Oct 2015 07:28:00 GMT");
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Basic", "ZGVtby1rZXk6ZGVtby1zZWNyZXQ=");
 
-        using (var response = await _httpClient.SendAsync(request))
+        using (var response = await _httpClient.SendAsync(httpRequest))
         {
             response.EnsureSuccessStatusCode();
-            var responseJsonString = await response.Content.ReadAsStringAsync();
-            // Debug.WriteLine(responseJsonString);
-            return JsonSerializer.Deserialize<DhlPostRatesResponseDto>(responseJsonString)!;
+            return await response.Content.ReadAsStringAsync();
         }
     }
 }

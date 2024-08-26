@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using CarrierRates.Api.Dtos.Dhl;
 using CarrierRates.Api.HttpClients;
 using CarrierRates.Api.Mapping;
@@ -8,7 +9,7 @@ namespace CarrierRates.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DhlController : ControllerBase
+    public class DhlController : ControllerBase, ICarrierRatesController
     {
         private readonly DhlHttpClient _httpClient;
 
@@ -19,30 +20,23 @@ namespace CarrierRates.Api.Controllers
 
         [Consumes("application/json")]
         [HttpPost("rates")]
-        public async Task<IActionResult> PostRates(DhlPostRatesRequestDto request)
+        public async Task<IActionResult> PostRates(object request)
         {
-            var queryParams = new Dictionary<string, string>{
-                {"accountNumber", request.AccountNumber.ToString()},
-                {"originCountryCode ", request.OriginCountryCode.ToString()},
-                {"originPostalCode ", request.OriginPostalCode.ToString()},
-                {"originCityName ", request.OriginCityName.ToString()},
-                {"destinationCountryCode ", request.DestinationCountryCode.ToString()},
-                {"destinationPostalCode ", request.DestinationCityName.ToString()},
-                {"destinationCityName ", request.DestinationCityName.ToString()},
-                {"weight ", request.Weight.ToString()},
-                {"length ", request.Length.ToString()},
-                {"width ", request.Width.ToString()},
-                {"height ", request.Height.ToString()},
-                {"plannedShippingDate ", request.PlannedShippingDate.ToString()},
-                {"isCustomsDeclarable  ", request.IsCustomsDeclarable.ToString()},
-                {"unitOfMeasurement", request.UnitOfMeasurement.ToString()},
-            };
+            if (request is not DhlPostRatesRequestDto requestDto)
+            {
+                return BadRequest("Bad request.");
+            }
 
-            Debug.WriteLine(queryParams.ToString());
-
-            var response = await _httpClient.PostRatesAsync(queryParams);
-
-            return Ok(response.ToShippingRateResponseDto());
+            try
+            {
+                var responseString = await _httpClient.PostRatesAsync(requestDto);
+                DhlPostRatesResponseDto responseDto = JsonSerializer.Deserialize<DhlPostRatesResponseDto>(responseString)!;
+                return Ok(responseDto);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
     }
 }
