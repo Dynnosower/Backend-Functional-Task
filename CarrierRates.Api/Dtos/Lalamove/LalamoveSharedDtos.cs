@@ -6,12 +6,10 @@ namespace CarrierRates.Api.Dtos.Lalamove.SharedDtos;
 public record class DataDto
 {
     [JsonPropertyName("serviceType")]
-    [DefaultValue("MOTORCYCLE")]
     public required string ServiceType { get; set; }
     [JsonPropertyName("stops")]
     public required List<StopsDto> Stops { get; set; }
     [JsonPropertyName("language")]
-    [DefaultValue("en_PH")]
     public required string Language { get; set; }
     [JsonPropertyName("priceBreakdown")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
