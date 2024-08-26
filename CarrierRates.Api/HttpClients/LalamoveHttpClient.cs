@@ -8,7 +8,7 @@ using CarrierRates.Api.Dtos.Lalamove;
 
 namespace CarrierRates.Api.HttpClients;
 
-public class LalamoveHttpClient
+public class LalamoveHttpClient : ICarrierRatesHttpClient<LalamovePostRatesResponseDto, LalamovePostRatesRequestDto>
 {
     private readonly HttpClient _httpClient;
 
@@ -25,6 +25,8 @@ public class LalamoveHttpClient
         string endpoint = "/v3/quotations";
 
         string jsonString = JsonSerializer.Serialize(requestBody);
+
+        Debug.WriteLine(jsonString);
 
         string rawSignature = $"{timeStamp}\r\n{method}\r\n{endpoint}\r\n\r\n{jsonString}";
 
@@ -59,7 +61,6 @@ public class LalamoveHttpClient
         {
             response.EnsureSuccessStatusCode();
             var responseJsonString = await response.Content.ReadAsStringAsync();
-            // Debug.WriteLine(responseJsonString);
             return JsonSerializer.Deserialize<LalamovePostRatesResponseDto>(responseJsonString)!;
         }
     }

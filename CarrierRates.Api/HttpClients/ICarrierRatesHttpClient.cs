@@ -2,7 +2,7 @@ using System;
 
 namespace CarrierRates.Api.HttpClients;
 
-public interface ICarrierRatesHttpClient
+public interface ICarrierRatesHttpClient<TResponse, TRequest>
 {
-    public Task<string> PostRatesAsync(object request);
+    public Task<TResponse> PostRatesAsync(TRequest request);
 }

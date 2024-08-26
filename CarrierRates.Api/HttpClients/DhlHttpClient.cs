@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace CarrierRates.Api.HttpClients;
 
-public class DhlHttpClient : ICarrierRatesHttpClient
+public class DhlHttpClient : ICarrierRatesHttpClient<DhlPostRatesResponseDto, DhlPostRatesRequestDto>
 {
     private readonly HttpClient _httpClient;
 
@@ -19,10 +19,8 @@ public class DhlHttpClient : ICarrierRatesHttpClient
         _httpClient = httpClient;
     }
 
-    public async Task<string> PostRatesAsync(object request)
+    public async Task<DhlPostRatesResponseDto> PostRatesAsync(DhlPostRatesRequestDto requestDto)
     {
-        var requestDto = (DhlPostRatesRequestDto)request;
-
         var queryParams = new Dictionary<string, string>{
                 {"accountNumber", requestDto.AccountNumber.ToString()},
                 {"originCountryCode ", requestDto.OriginCountryCode.ToString()},
@@ -51,7 +49,8 @@ public class DhlHttpClient : ICarrierRatesHttpClient
         using (var response = await _httpClient.SendAsync(httpRequest))
         {
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+            var responseString = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<DhlPostRatesResponseDto>(responseString)!;
         }
     }
 }

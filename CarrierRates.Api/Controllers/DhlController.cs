@@ -9,7 +9,7 @@ namespace CarrierRates.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DhlController : ControllerBase, ICarrierRatesController
+    public class DhlController : ControllerBase, ICarrierRatesController<DhlPostRatesRequestDto>
     {
         private readonly DhlHttpClient _httpClient;
 
@@ -20,18 +20,12 @@ namespace CarrierRates.Api.Controllers
 
         [Consumes("application/json")]
         [HttpPost("rates")]
-        public async Task<IActionResult> PostRates(object request)
+        public async Task<IActionResult> PostRates(DhlPostRatesRequestDto request)
         {
-            if (request is not DhlPostRatesRequestDto requestDto)
-            {
-                return BadRequest("Bad request.");
-            }
-
             try
             {
-                var responseString = await _httpClient.PostRatesAsync(requestDto);
-                DhlPostRatesResponseDto responseDto = JsonSerializer.Deserialize<DhlPostRatesResponseDto>(responseString)!;
-                return Ok(responseDto);
+                DhlPostRatesResponseDto response = await _httpClient.PostRatesAsync(request);
+                return Ok(response.ToShippingRateResponseDto());
             }
             catch (Exception)
             {

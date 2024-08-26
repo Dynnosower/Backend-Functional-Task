@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CarrierRates.Api.Controllers;
 
-public interface ICarrierRatesController
+public interface ICarrierRatesController<TRequest>
 {
-    public Task<IActionResult> PostRates(object requestDto);
+    public Task<IActionResult> PostRates(TRequest request);
 }
