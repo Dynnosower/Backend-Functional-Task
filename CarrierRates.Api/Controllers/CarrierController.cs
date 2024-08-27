@@ -26,7 +26,7 @@ namespace CarrierRates.Api.Controllers
         [HttpGet("")]
         public IActionResult GetCarriers(CarrierRatesContext dbContext)
         {
-            var carrierList = dbContext.Carriers.ToList<Carrier>();
+            var carrierList = dbContext.Carriers.ToList();
             return Ok(carrierList);
         }
 
@@ -39,6 +39,32 @@ namespace CarrierRates.Api.Controllers
             if (existingCarrier is null)
             {
                 return NotFound("Carrier does not exist.");
+            }
+            else if ((existingCarrier.isEnabled && isEnabled) || (!existingCarrier.isEnabled && !isEnabled))
+            {
+                return StatusCode(StatusCodes.Status304NotModified, "Carrier unchanged.");
+            }
+
+            var carrierList = dbContext.Carriers.ToList();
+            int enabledCarriers = 0;
+            int soleCarrierId = 0;
+
+            carrierList.ForEach(c =>
+            {
+                if (c.isEnabled)
+                {
+                    enabledCarriers++;
+                    soleCarrierId = c.Id;
+                }
+            });
+
+            if (enabledCarriers == 1 && !isEnabled)
+            {
+                var soleCarrier = await dbContext.Carriers.FindAsync(soleCarrierId);
+                if (existingCarrier == await dbContext.Carriers.FindAsync(soleCarrierId))
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, "Unable to disable carrier.");
+                }
             }
 
             dbContext.Entry(existingCarrier)
