@@ -1,26 +1,47 @@
-using System.Text.Json;
-using CarrierRates.Api.Extensions;
+using System.Net.Http.Headers;
+using CarrierRates.Api.Data;
+using CarrierRates.Api.Factories;
+using CarrierRates.Api.HttpClients;
+using CarrierRates.Api.Strategies;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-builder.Services.AddCustomHttpClients();
-builder.Services.AddRouting(options => options.LowercaseUrls = true);
+builder.Services.AddHttpClient<DhlHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api-mock.dhl.com");
+    client.DefaultRequestHeaders.Accept.Clear();
+    client.DefaultRequestHeaders.Accept.Add(
+        new MediaTypeWithQualityHeaderValue("application/json")
+    );
+});
 
+builder.Services.AddHttpClient<LalamoveHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("https://rest.sandbox.lalamove.com");
+    client.DefaultRequestHeaders.Accept.Clear();
+    client.DefaultRequestHeaders.Accept.Add(
+        new MediaTypeWithQualityHeaderValue("application/json")
+    );
+});
+
+builder.Services.AddScoped<CarrierStrategyFactory>();
+builder.Services.AddScoped<LalamoveStrategy>();
+builder.Services.AddScoped<DhlStrategy>();
+
+builder.Services.AddControllers();
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Backend Developer Functional Task", Version = "v1" });
-    c.ExampleFilters();
+    c.SwaggerDoc(
+        "v1",
+        new OpenApiInfo { Title = "Backend Developer Functional Task", Version = "v1" }
+    );
 });
-builder.Services.AddCustomSwaggerExamples();
 
-builder.Services.AddLogging(config =>
-{
-    config.AddDebug();
-});
+var connString = builder.Configuration.GetConnectionString("CarrierRates");
+builder.Services.AddSqlite<CarrierRatesContext>(connString);
 
 var app = builder.Build();
 
@@ -33,6 +54,6 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 app.MapControllers();
 
+await app.MigrateDbAsync();
+
 app.Run();
-
-
