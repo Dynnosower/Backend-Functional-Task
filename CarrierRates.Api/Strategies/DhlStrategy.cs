@@ -1,24 +1,37 @@
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using CarrierRates.Api.Data;
 using CarrierRates.Api.Dtos.Dhl;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRates.Api.Strategies;
 
 public class DhlStrategy : ICarrierStrategy<DhlPostRatesResponseDto, DhlPostRatesRequestDto>
 {
     private readonly HttpClient _httpClient;
+    private readonly CarrierRatesContext _dbContext;
 
-    public DhlStrategy(HttpClient httpClient)
+    public DhlStrategy(HttpClient httpClient, CarrierRatesContext dbContext)
     {
         _httpClient = httpClient;
         _httpClient.BaseAddress = new Uri("https://api-mock.dhl.com");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        _dbContext = dbContext;
     }
 
     public async Task<DhlPostRatesResponseDto> PostRatesAsync(DhlPostRatesRequestDto requestDto)
     {
+        var carrier = await _dbContext.Carriers.FirstOrDefaultAsync(carrier => carrier.Name == "DHL");
+        
+        if (!carrier!.isEnabled)
+        {
+            throw new Exception(StatusCodes.Status403Forbidden.ToString());
+        }
+        
         var queryParams = new Dictionary<string, string>{
                 {"accountNumber", requestDto.AccountNumber.ToString()},
                 {"originCountryCode ", requestDto.OriginCountryCode.ToString()},

@@ -17,7 +17,7 @@ public class CarrierStrategyFactory
         {
             "DHL" => _serviceProvider.GetRequiredService<DhlStrategy>(),
             "Lalamove" => _serviceProvider.GetRequiredService<LalamoveStrategy>(),
-            _ => throw new Exception("Invalid carrier type"),
+            _ => throw new Exception(StatusCodes.Status404NotFound.ToString()),
         };
     }
 }

@@ -8,7 +8,6 @@ using CarrierRates.Api.Factories;
 using CarrierRates.Api.Mapping;
 using CarrierRates.Api.Strategies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRates.Api.Controllers
 {
@@ -59,45 +58,42 @@ namespace CarrierRates.Api.Controllers
 
         [Consumes("application/json")]
         [HttpPost("rates")]
-        public async Task<IActionResult> GetRates(string carrierType, JsonElement request)
+        public async Task<IActionResult> GetRates(string carrierName, JsonElement request)
         {
-            var strategy = _factory.CreateStrategy(carrierType);
-
-            switch (strategy)
+            try
             {
-                case DhlStrategy dhlStrategy:
-                    {
-                        try
+                var strategy = _factory.CreateStrategy(carrierName);
+
+                switch (strategy)
+                {
+                    case DhlStrategy dhlStrategy:
                         {
                             DhlPostRatesRequestDto requestDto = JsonSerializer.Deserialize<DhlPostRatesRequestDto>(request.GetRawText())!;
                             var response = await dhlStrategy.PostRatesAsync(requestDto);
                             return Ok(response.ToShippingRateResponseDto());
                         }
-                        catch (Exception e)
-                        {
-                            Debug.WriteLine(e);
-                            return BadRequest("Bad request.");
-                        }
-                    }
 
-                case LalamoveStrategy lalamoveStrategy:
-                    {
-                        try
+                    case LalamoveStrategy lalamoveStrategy:
                         {
                             LalamovePostRatesRequestDto requestDto = JsonSerializer.Deserialize<LalamovePostRatesRequestDto>(request.GetRawText())!;
                             var response = await lalamoveStrategy.PostRatesAsync(requestDto);
                             return Ok(response.ToShippingRateResponseDto());
                         }
-                        catch (Exception e)
-                        {
-                            Debug.WriteLine(e);
-                            return BadRequest("Bad request.");
-                        }
-                    }
 
-                default:
-                    return StatusCode(StatusCodes.Status500InternalServerError, "Invalid carrier");
+                    default:
+                        return NotFound("Invalid carrier.");
+                }
             }
+            catch (Exception e)
+            {
+                return e.Message switch
+                {
+                    "403" => StatusCode(StatusCodes.Status403Forbidden, "Carrier is disabled."),
+                    "404" => StatusCode(StatusCodes.Status403Forbidden, "Invalid carrier."),
+                    _ => BadRequest("Bad request."),
+                };
+            }
+
         }
     }
 }

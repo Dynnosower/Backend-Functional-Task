@@ -3,23 +3,35 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using CarrierRates.Api.Data;
 using CarrierRates.Api.Dtos.Lalamove;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRates.Api.Strategies;
 
 public class LalamoveStrategy : ICarrierStrategy<LalamovePostRatesResponseDto, LalamovePostRatesRequestDto>
 {
     private readonly HttpClient _httpClient;
+    private readonly CarrierRatesContext _dbContext;
 
-    public LalamoveStrategy(HttpClient httpClient)
+    public LalamoveStrategy(HttpClient httpClient, CarrierRatesContext dbContext)
     {
         _httpClient = httpClient;
         _httpClient.BaseAddress = new Uri("https://rest.sandbox.lalamove.com");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        _dbContext = dbContext;
     }
     public async Task<LalamovePostRatesResponseDto> PostRatesAsync(LalamovePostRatesRequestDto requestBody)
     {
+        var carrier = await _dbContext.Carriers.FirstOrDefaultAsync(carrier => carrier.Name == "Lalamove");
+        
+        if (!carrier!.isEnabled)
+        {
+            throw new Exception(StatusCodes.Status403Forbidden.ToString());
+        }
+
         string secret = "sk_test_f1wK6CbT30CMSuuVMotBnLsx9TBSUXun9y4jFjGYotsvaTONpzAObGtZ+j2G/bbl";
         string key = "pk_test_928e16e2aec2b0cf1abbd99a7d6fef8a";
         string timeStamp = DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalMilliseconds.ToString().Split(".")[0];
