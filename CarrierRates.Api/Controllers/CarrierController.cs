@@ -62,5 +62,12 @@ namespace CarrierRates.Api.Controllers
                     return StatusCode(StatusCodes.Status500InternalServerError, "Invalid carrier");
             }
         }
+
+        [Consumes("application/json")]
+        [HttpGet("rates")]
+        public async Task<IActionResult> GetCarriers()
+        {
+            return Ok();
+        }
     }
 }

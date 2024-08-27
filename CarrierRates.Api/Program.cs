@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using CarrierRates.Api.Data;
 using CarrierRates.Api.Factories;
 using CarrierRates.Api.HttpClients;
 using CarrierRates.Api.Strategies;
@@ -39,6 +40,9 @@ builder.Services.AddSwaggerGen(c =>
     );
 });
 
+var connString = builder.Configuration.GetConnectionString("CarrierRates");
+builder.Services.AddSqlite<CarrierRatesContext>(connString);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -49,5 +53,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 app.MapControllers();
+
+await app.MigrateDbAsync();
 
 app.Run();
